@@ -18,14 +18,25 @@ const App = () => {
   ];
 
   const subjects = [
-    { name: 'Physical Education', value: 'Physical Education' },
-    { name: 'Curriculum and Instruction', value: 'Curriculum and Instruction' },
+    { name: 'MED6101-Research', value: 'MED6101-Research' },
+    { name: 'MED6102-Philosophy', value: 'MED6102-Philosophy' },
+    { name: 'MED6103-Classroom', value: 'MED6103-Classroom' },
+    { name: '01172524-Principle PE', value: '01172524-Principle PE' },
+    { name: '01172592-Stat', value: '01172592-Stat' },
+    { name: '01172544-Exercise Science', value: '01172544-Exercise Science' },
+    { name: '01172533-Adv. Measure', value: '01172533-Adv. Measure' },
+    { name: 'Task', value: 'Task' },
+
     // Add more subjects here
   ];
 
   const assignmentTypes = [
     { name: 'Individual', value: 'Individual' },
     { name: 'Group', value: 'Group' },
+    { name: 'Presentation', value: 'Presentation' },
+    { name: 'Meeting', value: 'Meeting' },
+    { name: 'Exam', value: 'Exam' },
+    { name: 'Other', value: 'Other' },
     // You can add other types here, e.g., 'Presentation', 'Exam'
   ];
   
