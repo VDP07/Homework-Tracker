@@ -10,11 +10,10 @@ const App = () => {
   // State to manage form submission status
   const [submissionStatus, setSubmissionStatus] = useState(null);
 
-  // Data for dropdowns, customize these as needed!
+  // Data for dropdowns, customized with your provided info!
   const universities = [
     { name: 'Kasetsart University', value: 'Kasetsart University' },
     { name: 'Nakornratchasima College', value: 'Nakornratchasima College' },
-    // Add more universities here
   ];
 
   const subjects = [
@@ -26,8 +25,6 @@ const App = () => {
     { name: '01172544-Exercise Science', value: '01172544-Exercise Science' },
     { name: '01172533-Adv. Measure', value: '01172533-Adv. Measure' },
     { name: 'Task', value: 'Task' },
-
-    // Add more subjects here
   ];
 
   const assignmentTypes = [
@@ -37,20 +34,16 @@ const App = () => {
     { name: 'Meeting', value: 'Meeting' },
     { name: 'Exam', value: 'Exam' },
     { name: 'Other', value: 'Other' },
-    // You can add other types here, e.g., 'Presentation', 'Exam'
   ];
   
   const { register, handleSubmit, formState: { errors }, reset } = useForm();
 
   const onSubmit = async (data) => {
-    // Show loading state
     setSubmissionStatus('loading');
     
-    // The fetch call is now active by default.
     try {
       const response = await fetch(SCRIPT_URL, {
         method: 'POST',
-        // The 'no-cors' mode is required for Google Apps Script to work correctly.
         mode: 'no-cors',
         headers: {
           'Content-Type': 'application/json',
@@ -58,10 +51,8 @@ const App = () => {
         body: JSON.stringify(data),
       });
 
-      // Since we use 'no-cors', we can't check the response directly.
-      // We'll assume success for now, as the script will log the data.
       setSubmissionStatus('success');
-      reset(); // Reset the form on successful submission
+      reset();
     } catch (error) {
       console.error('Submission failed:', error);
       setSubmissionStatus('error');
@@ -69,120 +60,237 @@ const App = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4 antialiased">
-      <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-2xl border border-gray-200">
-        <h1 className="text-4xl font-extrabold text-center text-gray-900 mb-2">
-          Homework Log
-        </h1>
-        <p className="text-center text-lg text-gray-600 mb-8">
-          Enter your assignment details to save them automatically.
-        </p>
+    <>
+      <style>
+        {`
+          body {
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+            background-color: #f3f4f6;
+          }
+          .main-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+          }
+          .card {
+            background-color: #ffffff;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 48rem;
+            border: 1px solid #e5e7eb;
+          }
+          .title {
+            font-size: 2.25rem;
+            font-weight: 800;
+            text-align: center;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+          }
+          .subtitle {
+            font-size: 1.125rem;
+            text-align: center;
+            color: #4b5563;
+            margin-bottom: 2rem;
+          }
+          .message-box {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            text-align: center;
+            font-size: 1.125rem;
+            font-weight: 600;
+            border-radius: 0.5rem;
+            border: 1px solid transparent;
+          }
+          .success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border-color: #a7f3d0;
+          }
+          .error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border-color: #fca5a5;
+          }
+          .form-group {
+            margin-bottom: 1.5rem;
+          }
+          .form-label {
+            color: #374151;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.25rem;
+          }
+          .form-label svg {
+            width: 1.25rem;
+            height: 1.25rem;
+            color: #6b7280;
+            margin-right: 0.5rem;
+          }
+          .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            transition-property: all;
+            transition-duration: 150ms;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+          }
+          .form-input:focus {
+            border-color: #3b82f6;
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+          }
+          .form-input.uppercase {
+            text-transform: uppercase;
+          }
+          .error-message {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+          }
+          .submit-button {
+            width: 100%;
+            background-color: #2563eb;
+            color: #ffffff;
+            font-weight: 700;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition-property: all;
+            transition-duration: 300ms;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transform: scale(1);
+          }
+          .submit-button:hover {
+            background-color: #1d4ed8;
+            transform: scale(1.02);
+          }
+          .submit-button[disabled] {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: scale(1);
+          }
+        `}
+      </style>
 
-        {submissionStatus === 'success' && (
-          <div className="mb-4 p-4 text-center text-lg font-semibold bg-green-100 text-green-700 rounded-lg border border-green-200">
-            ✅ Homework submitted successfully!
-          </div>
-        )}
-        {submissionStatus === 'error' && (
-          <div className="mb-4 p-4 text-center text-lg font-semibold bg-red-100 text-red-700 rounded-lg border border-red-200">
-            ❌ An error occurred. Please try again.
-          </div>
-        )}
-        
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* University Field (already a dropdown) */}
-          <div className="relative">
-            <label htmlFor="university" className="text-gray-700 font-medium flex items-center mb-1">
-              <School className="w-5 h-5 text-gray-500 mr-2" /> University
-            </label>
-            <select
-              id="university"
-              {...register('university', { required: 'University is required' })}
-              className="mt-1 block w-full p-3 pl-10 border border-gray-300 rounded-xl shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-colors"
-            >
-              <option value="">Select a University...</option>
-              {universities.map((uni) => (
-                <option key={uni.value} value={uni.value}>{uni.name}</option>
-              ))}
-            </select>
-            {errors.university && <p className="text-red-500 text-sm mt-1">{errors.university.message}</p>}
-          </div>
+      <div className="main-container">
+        <div className="card">
+          <h1 className="title">Homework Log</h1>
+          <p className="subtitle">Enter your assignment details to save them automatically.</p>
 
-          {/* Subject Field (already a dropdown) */}
-          <div className="relative">
-            <label htmlFor="subject" className="text-gray-700 font-medium flex items-center mb-1">
-              <Book className="w-5 h-5 text-gray-500 mr-2" /> Subject
-            </label>
-            <select
-              id="subject"
-              {...register('subject', { required: 'Subject is required' })}
-              className="mt-1 block w-full p-3 pl-10 border border-gray-300 rounded-xl shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-colors"
-            >
-              <option value="">Select a Subject...</option>
-              {subjects.map((sub) => (
-                <option key={sub.value} value={sub.value}>{sub.name}</option>
-              ))}
-            </select>
-            {errors.subject && <p className="text-red-500 text-sm mt-1">{errors.subject.message}</p>}
-          </div>
-
-          {/* Assignment Type (now a dropdown) */}
-          <div className="relative">
-            <label htmlFor="type" className="text-gray-700 font-medium flex items-center mb-1">
-              <Users className="w-5 h-5 text-gray-500 mr-2" /> Assignment Type
-            </label>
-            <select
-              id="type"
-              {...register('type', { required: 'Assignment type is required' })}
-              className="mt-1 block w-full p-3 pl-10 border border-gray-300 rounded-xl shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-colors"
-            >
-              <option value="">Select an Assignment Type...</option>
-              {assignmentTypes.map((type) => (
-                <option key={type.value} value={type.value}>{type.name}</option>
-              ))}
-            </select>
-            {errors.type && <p className="text-red-500 text-sm mt-1">{errors.type.message}</p>}
-          </div>
-
-          {/* Due Date */}
-          <div className="relative">
-            <label htmlFor="dueDate" className="text-gray-700 font-medium flex items-center mb-1">
-              <Calendar className="w-5 h-5 text-gray-500 mr-2" /> Due Date
-            </label>
-            <input
-              type="date"
-              id="dueDate"
-              {...register('dueDate', { required: 'Due date is required' })}
-              className="mt-1 block w-full p-3 border border-gray-300 rounded-xl shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-colors"
-            />
-            {errors.dueDate && <p className="text-red-500 text-sm mt-1">{errors.dueDate.message}</p>}
-          </div>
+          {submissionStatus === 'success' && (
+            <div className="message-box success">
+              ✅ Homework submitted successfully!
+            </div>
+          )}
+          {submissionStatus === 'error' && (
+            <div className="message-box error">
+              ❌ An error occurred. Please try again.
+            </div>
+          )}
           
-          {/* Assignment Description */}
-          <div className="relative">
-            <label htmlFor="description" className="text-gray-700 font-medium flex items-center mb-1">
-              <Book className="w-5 h-5 text-gray-500 mr-2" /> Assignment Name / Description
-            </label>
-            <textarea
-              id="description"
-              rows="4"
-              {...register('description', { required: 'Description is required' })}
-              className="mt-1 block w-full p-3 border border-gray-300 rounded-xl shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-colors"
-            ></textarea>
-            {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>}
-          </div>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {/* University Field (already a dropdown) */}
+            <div className="form-group">
+              <label htmlFor="university" className="form-label">
+                <School /> University
+              </label>
+              <select
+                id="university"
+                {...register('university', { required: 'University is required' })}
+                className="form-input"
+              >
+                <option value="">Select a University...</option>
+                {universities.map((uni) => (
+                  <option key={uni.value} value={uni.value}>{uni.name}</option>
+                ))}
+              </select>
+              {errors.university && <p className="error-message">{errors.university.message}</p>}
+            </div>
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105"
-            disabled={submissionStatus === 'loading'}
-          >
-            {submissionStatus === 'loading' ? 'Submitting...' : 'Submit Assignment'}
-          </button>
-        </form>
+            {/* Subject Field (already a dropdown) */}
+            <div className="form-group">
+              <label htmlFor="subject" className="form-label">
+                <Book /> Subject
+              </label>
+              <select
+                id="subject"
+                {...register('subject', { required: 'Subject is required' })}
+                className="form-input"
+              >
+                <option value="">Select a Subject...</option>
+                {subjects.map((sub) => (
+                  <option key={sub.value} value={sub.value}>{sub.name}</option>
+                ))}
+              </select>
+              {errors.subject && <p className="error-message">{errors.subject.message}</p>}
+            </div>
+
+            {/* Assignment Type (now a dropdown) */}
+            <div className="form-group">
+              <label htmlFor="type" className="form-label">
+                <Users /> Assignment Type
+              </label>
+              <select
+                id="type"
+                {...register('type', { required: 'Assignment type is required' })}
+                className="form-input"
+              >
+                <option value="">Select an Assignment Type...</option>
+                {assignmentTypes.map((type) => (
+                  <option key={type.value} value={type.value}>{type.name}</option>
+                ))}
+              </select>
+              {errors.type && <p className="error-message">{errors.type.message}</p>}
+            </div>
+
+            {/* Due Date */}
+            <div className="form-group">
+              <label htmlFor="dueDate" className="form-label">
+                <Calendar /> Due Date
+              </label>
+              <input
+                type="date"
+                id="dueDate"
+                {...register('dueDate', { required: 'Due date is required' })}
+                className="form-input"
+              />
+              {errors.dueDate && <p className="error-message">{errors.dueDate.message}</p>}
+            </div>
+            
+            {/* Assignment Description */}
+            <div className="form-group">
+              <label htmlFor="description" className="form-label">
+                <Book /> Assignment Name / Description
+              </label>
+              <textarea
+                id="description"
+                rows="4"
+                {...register('description', { required: 'Description is required' })}
+                className="form-input"
+              ></textarea>
+              {errors.description && <p className="error-message">{errors.description.message}</p>}
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              className="submit-button"
+              disabled={submissionStatus === 'loading'}
+            >
+              {submissionStatus === 'loading' ? 'Submitting...' : 'Submit Assignment'}
+            </button>
+          </form>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
