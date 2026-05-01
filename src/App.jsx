@@ -1,23 +1,21 @@
 import React, { useState } from 'react';
-import { Calendar, Book, Users, School } from 'lucide-react';
+import { Calendar, Book, Users, School, CheckSquare, Clock } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
 const App = () => {
-  // Use a placeholder for the Google Apps Script URL
-  // REPLACE THIS WITH YOUR ACTUAL DEPLOYED SCRIPT URL
+  // Your Google Apps Script URL
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwOqUav0nrJDa_--AuHC4aVOp7KfLvsjNjyQ8jKFAbg9D7QIBPfTgFfib-FD-r_JIrC/exec';
 
   // State to manage form submission status
   const [submissionStatus, setSubmissionStatus] = useState(null);
 
-  // Data for dropdowns, customized with your provided info!
+  // Data for dropdowns
   const universities = [
     { name: 'Kasetsart University', value: 'Kasetsart University' },
     { name: 'Nakornratchasima College', value: 'Nakornratchasima College' },
   ];
 
   const subjects = [
-
     { name: 'MED6204-Research', value: 'MED6204-Research' },
     { name: 'MED6006-Quality', value: 'MED6006-Quality' },
     { name: 'NMC Thesis', value: 'NMC Thesis' },
@@ -34,13 +32,22 @@ const App = () => {
     { name: 'Other', value: 'Other' },
   ];
   
-  const { register, handleSubmit, formState: { errors }, reset } = useForm();
+  // Added 'watch' to monitor the checkbox
+  const { register, handleSubmit, watch, formState: { errors }, reset } = useForm();
+  
+  // Watch the "createTask" checkbox
+  const watchCreateTask = watch('createTask');
 
   const onSubmit = async (data) => {
     setSubmissionStatus('loading');
     
+    // If the checkbox is unchecked, we don't send the daysOut data
+    if (!data.createTask) {
+      delete data.daysOut;
+    }
+    
     try {
-      const response = await fetch(SCRIPT_URL, {
+      await fetch(SCRIPT_URL, {
         method: 'POST',
         mode: 'no-cors',
         headers: {
@@ -50,7 +57,8 @@ const App = () => {
       });
 
       setSubmissionStatus('success');
-      reset();
+      // Reset form but explicitly clear the watch states to hide the daysOut field again
+      reset({ createTask: false, daysOut: '' });
     } catch (error) {
       console.error('Submission failed:', error);
       setSubmissionStatus('error');
@@ -145,13 +153,34 @@ const App = () => {
             outline-offset: 2px;
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
           }
-          .form-input.uppercase {
-            text-transform: uppercase;
-          }
           .error-message {
             color: #ef4444;
             font-size: 0.875rem;
             margin-top: 0.25rem;
+          }
+          .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            background-color: #f8fafc;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            border: 1px solid #e2e8f0;
+          }
+          .checkbox-input {
+            width: 1.25rem;
+            height: 1.25rem;
+            margin-right: 0.75rem;
+            cursor: pointer;
+            accent-color: #2563eb;
+          }
+          .checkbox-label {
+            color: #374151;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            margin: 0;
           }
           .submit-button {
             width: 100%;
@@ -195,7 +224,7 @@ const App = () => {
           )}
           
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* University Field (already a dropdown) */}
+            {/* University Field */}
             <div className="form-group">
               <label htmlFor="university" className="form-label">
                 <School /> University
@@ -213,7 +242,7 @@ const App = () => {
               {errors.university && <p className="error-message">{errors.university.message}</p>}
             </div>
 
-            {/* Subject Field (already a dropdown) */}
+            {/* Subject Field */}
             <div className="form-group">
               <label htmlFor="subject" className="form-label">
                 <Book /> Subject
@@ -231,7 +260,7 @@ const App = () => {
               {errors.subject && <p className="error-message">{errors.subject.message}</p>}
             </div>
 
-            {/* Assignment Type (now a dropdown) */}
+            {/* Assignment Type */}
             <div className="form-group">
               <label htmlFor="type" className="form-label">
                 <Users /> Assignment Type
@@ -276,6 +305,39 @@ const App = () => {
               ></textarea>
               {errors.description && <p className="error-message">{errors.description.message}</p>}
             </div>
+
+            {/* ADDED: Checkbox to trigger Task Creation */}
+            <div className="checkbox-container">
+              <input
+                type="checkbox"
+                id="createTask"
+                {...register('createTask')}
+                className="checkbox-input"
+              />
+              <label htmlFor="createTask" className="checkbox-label">
+                <CheckSquare style={{marginRight: '0.5rem', width: '1.25rem'}} /> Also create a task reminder?
+              </label>
+            </div>
+
+            {/* CONDITIONAL FIELD: Only shows if the checkbox is checked */}
+            {watchCreateTask && (
+              <div className="form-group">
+                <label htmlFor="daysOut" className="form-label">
+                  <Clock /> Days Out (Before Due Date)
+                </label>
+                <input
+                  type="number"
+                  id="daysOut"
+                  {...register('daysOut', { 
+                    required: 'Please specify how many days out for the task',
+                    min: { value: 0, message: 'Cannot be a negative number' }
+                  })}
+                  className="form-input"
+                  placeholder="e.g., 5"
+                />
+                {errors.daysOut && <p className="error-message">{errors.daysOut.message}</p>}
+              </div>
+            )}
 
             {/* Submit Button */}
             <button
