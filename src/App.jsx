@@ -17,13 +17,11 @@ const App = () => {
   ];
 
   const subjects = [
-    { name: 'MED6101-Research', value: 'MED6101-Research' },
-    { name: 'MED6102-Philosophy', value: 'MED6102-Philosophy' },
-    { name: 'MED6103-Classroom', value: 'MED6103-Classroom' },
-    { name: '01172524-Principle PE', value: '01172524-Principle PE' },
-    { name: '01172592-Stat', value: '01172592-Stat' },
-    { name: '01172544-Exercise Science', value: '01172544-Exercise Science' },
-    { name: '01172533-Adv. Measure', value: '01172533-Adv. Measure' },
+
+    { name: 'MED6204-Research', value: 'MED6204-Research' },
+    { name: 'MED6006-Quality', value: 'MED6006-Quality' },
+    { name: 'NMC Thesis', value: 'NMC Thesis' },
+    { name: 'KU Thesis', value: 'KU Thesis' },
     { name: 'Task', value: 'Task' },
   ];
 
