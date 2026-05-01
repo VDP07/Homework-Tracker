@@ -32,8 +32,12 @@ const App = () => {
     { name: 'Other', value: 'Other' },
   ];
   
-  // Added 'watch' to monitor the checkbox
-  const { register, handleSubmit, watch, formState: { errors }, reset } = useForm();
+  // Set the default value of daysOut to 5
+  const { register, handleSubmit, watch, formState: { errors }, reset } = useForm({
+    defaultValues: {
+      daysOut: 5
+    }
+  });
   
   // Watch the "createTask" checkbox
   const watchCreateTask = watch('createTask');
@@ -41,9 +45,15 @@ const App = () => {
   const onSubmit = async (data) => {
     setSubmissionStatus('loading');
     
-    // If the checkbox is unchecked, we don't send the daysOut data
-    if (!data.createTask) {
-      delete data.daysOut;
+    // Create a copy of the data to modify before sending it to Google
+    const payload = { ...data };
+    
+    // If the checkbox is checked, format the custom Task Name
+    if (payload.createTask) {
+      payload.taskName = `Task-${payload.subject}`; // Example: "Task-MED6204-Research"
+    } else {
+      // If unchecked, don't send daysOut data
+      delete payload.daysOut;
     }
     
     try {
@@ -53,12 +63,12 @@ const App = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       });
 
       setSubmissionStatus('success');
-      // Reset form but explicitly clear the watch states to hide the daysOut field again
-      reset({ createTask: false, daysOut: '' });
+      // Reset the form, keeping daysOut at 5 for the next entry
+      reset({ createTask: false, daysOut: 5 });
     } catch (error) {
       console.error('Submission failed:', error);
       setSubmissionStatus('error');
@@ -224,7 +234,6 @@ const App = () => {
           )}
           
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* University Field */}
             <div className="form-group">
               <label htmlFor="university" className="form-label">
                 <School /> University
@@ -242,7 +251,6 @@ const App = () => {
               {errors.university && <p className="error-message">{errors.university.message}</p>}
             </div>
 
-            {/* Subject Field */}
             <div className="form-group">
               <label htmlFor="subject" className="form-label">
                 <Book /> Subject
@@ -260,7 +268,6 @@ const App = () => {
               {errors.subject && <p className="error-message">{errors.subject.message}</p>}
             </div>
 
-            {/* Assignment Type */}
             <div className="form-group">
               <label htmlFor="type" className="form-label">
                 <Users /> Assignment Type
@@ -278,7 +285,6 @@ const App = () => {
               {errors.type && <p className="error-message">{errors.type.message}</p>}
             </div>
 
-            {/* Due Date */}
             <div className="form-group">
               <label htmlFor="dueDate" className="form-label">
                 <Calendar /> Due Date
@@ -292,7 +298,6 @@ const App = () => {
               {errors.dueDate && <p className="error-message">{errors.dueDate.message}</p>}
             </div>
             
-            {/* Assignment Description */}
             <div className="form-group">
               <label htmlFor="description" className="form-label">
                 <Book /> Assignment Name / Description
@@ -306,7 +311,6 @@ const App = () => {
               {errors.description && <p className="error-message">{errors.description.message}</p>}
             </div>
 
-            {/* ADDED: Checkbox to trigger Task Creation */}
             <div className="checkbox-container">
               <input
                 type="checkbox"
@@ -319,7 +323,6 @@ const App = () => {
               </label>
             </div>
 
-            {/* CONDITIONAL FIELD: Only shows if the checkbox is checked */}
             {watchCreateTask && (
               <div className="form-group">
                 <label htmlFor="daysOut" className="form-label">
@@ -333,13 +336,11 @@ const App = () => {
                     min: { value: 0, message: 'Cannot be a negative number' }
                   })}
                   className="form-input"
-                  placeholder="e.g., 5"
                 />
                 {errors.daysOut && <p className="error-message">{errors.daysOut.message}</p>}
               </div>
             )}
 
-            {/* Submit Button */}
             <button
               type="submit"
               className="submit-button"
