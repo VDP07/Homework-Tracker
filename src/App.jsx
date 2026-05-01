@@ -20,6 +20,8 @@ const App = () => {
   ];
 
   const subjects = [
+    { name: 'KU', value: 'KU' },
+    { name: 'NMC', value: 'NMC' },
     { name: 'MED6204-Research', value: 'MED6204-Research' },
     { name: 'MED6006-Quality', value: 'MED6006-Quality' },
     { name: 'NMC Thesis', value: 'NMC Thesis' },
