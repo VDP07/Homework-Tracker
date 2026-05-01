@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, Book, Users, School, CheckSquare, Clock } from 'lucide-react';
+import { Calendar, Book, Users, School, CheckSquare, Clock, List } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
 const App = () => {
@@ -9,6 +9,14 @@ const App = () => {
   const universities = [
     { name: 'Kasetsart University', value: 'Kasetsart University' },
     { name: 'Nakornratchasima College', value: 'Nakornratchasima College' },
+  ];
+
+  // ADDED: New Task List options
+  const taskListOptions = [
+    { name: 'Hw Due', value: 'Hw Due' },
+    { name: 'Activity', value: 'Activity' },
+    { name: 'Check Point', value: 'Check Point' },
+    { name: 'Other', value: 'Other' },
   ];
 
   const subjects = [
@@ -39,8 +47,8 @@ const App = () => {
     const payload = { ...data };
     
     if (payload.createTask) {
-      // Formats it exactly as: Homework-MED6204-Research
-      payload.taskName = `Homework-${payload.subject}`; 
+      // UPDATED: Formats it exactly as: [Task List]-[Subject] (e.g., "Hw Due-MED6204-Research")
+      payload.taskName = `${payload.taskList}-${payload.subject}`; 
     } else {
       delete payload.daysOut;
     }
@@ -103,6 +111,17 @@ const App = () => {
                 <option value="">Select a University...</option>
                 {universities.map((uni) => <option key={uni.value} value={uni.value}>{uni.name}</option>)}
               </select>
+              {errors.university && <p className="error-message">{errors.university.message}</p>}
+            </div>
+
+            {/* NEW: Task List Dropdown */}
+            <div className="form-group">
+              <label htmlFor="taskList" className="form-label"><List /> Task List</label>
+              <select id="taskList" {...register('taskList', { required: 'Task List category is required' })} className="form-input">
+                <option value="">Select a Task List...</option>
+                {taskListOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.name}</option>)}
+              </select>
+              {errors.taskList && <p className="error-message">{errors.taskList.message}</p>}
             </div>
 
             <div className="form-group">
@@ -111,6 +130,7 @@ const App = () => {
                 <option value="">Select a Subject...</option>
                 {subjects.map((sub) => <option key={sub.value} value={sub.value}>{sub.name}</option>)}
               </select>
+              {errors.subject && <p className="error-message">{errors.subject.message}</p>}
             </div>
 
             <div className="form-group">
@@ -119,16 +139,19 @@ const App = () => {
                 <option value="">Select an Assignment Type...</option>
                 {assignmentTypes.map((type) => <option key={type.value} value={type.value}>{type.name}</option>)}
               </select>
+              {errors.type && <p className="error-message">{errors.type.message}</p>}
             </div>
 
             <div className="form-group">
               <label htmlFor="dueDate" className="form-label"><Calendar /> Due Date</label>
               <input type="date" id="dueDate" {...register('dueDate', { required: 'Due date is required' })} className="form-input" />
+              {errors.dueDate && <p className="error-message">{errors.dueDate.message}</p>}
             </div>
             
             <div className="form-group">
               <label htmlFor="description" className="form-label"><Book /> Assignment Name / Description</label>
               <textarea id="description" rows="4" {...register('description', { required: 'Description is required' })} className="form-input"></textarea>
+              {errors.description && <p className="error-message">{errors.description.message}</p>}
             </div>
 
             <div className="checkbox-container">
@@ -145,12 +168,13 @@ const App = () => {
                   type="number"
                   id="daysOut"
                   {...register('daysOut', { 
-                    valueAsNumber: true, // Forces the input to be a math number
+                    valueAsNumber: true,
                     required: 'Please specify how many days out for the task',
                     min: { value: 0, message: 'Cannot be negative' }
                   })}
                   className="form-input"
                 />
+                {errors.daysOut && <p className="error-message">{errors.daysOut.message}</p>}
               </div>
             )}
 
