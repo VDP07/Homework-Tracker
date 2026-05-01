@@ -3,13 +3,9 @@ import { Calendar, Book, Users, School, CheckSquare, Clock } from 'lucide-react'
 import { useForm } from 'react-hook-form';
 
 const App = () => {
-  // Your Google Apps Script URL
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwOqUav0nrJDa_--AuHC4aVOp7KfLvsjNjyQ8jKFAbg9D7QIBPfTgFfib-FD-r_JIrC/exec';
-
-  // State to manage form submission status
   const [submissionStatus, setSubmissionStatus] = useState(null);
 
-  // Data for dropdowns
   const universities = [
     { name: 'Kasetsart University', value: 'Kasetsart University' },
     { name: 'Nakornratchasima College', value: 'Nakornratchasima College' },
@@ -32,27 +28,20 @@ const App = () => {
     { name: 'Other', value: 'Other' },
   ];
   
-  // Set the default value of daysOut to 5
   const { register, handleSubmit, watch, formState: { errors }, reset } = useForm({
-    defaultValues: {
-      daysOut: 5
-    }
+    defaultValues: { daysOut: 5 }
   });
   
-  // Watch the "createTask" checkbox
   const watchCreateTask = watch('createTask');
 
   const onSubmit = async (data) => {
     setSubmissionStatus('loading');
-    
-    // Create a copy of the data to modify before sending it to Google
     const payload = { ...data };
     
-    // If the checkbox is checked, format the custom Task Name
     if (payload.createTask) {
-      payload.taskName = `Task-${payload.subject}`; // Example: "Task-MED6204-Research"
+      // Formats it exactly as: Homework-MED6204-Research
+      payload.taskName = `Homework-${payload.subject}`; 
     } else {
-      // If unchecked, don't send daysOut data
       delete payload.daysOut;
     }
     
@@ -60,14 +49,11 @@ const App = () => {
       await fetch(SCRIPT_URL, {
         method: 'POST',
         mode: 'no-cors',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
       setSubmissionStatus('success');
-      // Reset the form, keeping daysOut at 5 for the next entry
       reset({ createTask: false, daysOut: 5 });
     } catch (error) {
       console.error('Submission failed:', error);
@@ -79,141 +65,26 @@ const App = () => {
     <>
       <style>
         {`
-          body {
-            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
-            background-color: #f3f4f6;
-          }
-          .main-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-          }
-          .card {
-            background-color: #ffffff;
-            padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            width: 100%;
-            max-width: 48rem;
-            border: 1px solid #e5e7eb;
-          }
-          .title {
-            font-size: 2.25rem;
-            font-weight: 800;
-            text-align: center;
-            color: #1f2937;
-            margin-bottom: 0.5rem;
-          }
-          .subtitle {
-            font-size: 1.125rem;
-            text-align: center;
-            color: #4b5563;
-            margin-bottom: 2rem;
-          }
-          .message-box {
-            margin-bottom: 1rem;
-            padding: 1rem;
-            text-align: center;
-            font-size: 1.125rem;
-            font-weight: 600;
-            border-radius: 0.5rem;
-            border: 1px solid transparent;
-          }
-          .success {
-            background-color: #d1fae5;
-            color: #065f46;
-            border-color: #a7f3d0;
-          }
-          .error {
-            background-color: #fee2e2;
-            color: #991b1b;
-            border-color: #fca5a5;
-          }
-          .form-group {
-            margin-bottom: 1.5rem;
-          }
-          .form-label {
-            color: #374151;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            margin-bottom: 0.25rem;
-          }
-          .form-label svg {
-            width: 1.25rem;
-            height: 1.25rem;
-            color: #6b7280;
-            margin-right: 0.5rem;
-          }
-          .form-input {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.75rem;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            transition-property: all;
-            transition-duration: 150ms;
-            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-          }
-          .form-input:focus {
-            border-color: #3b82f6;
-            outline: 2px solid transparent;
-            outline-offset: 2px;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
-          }
-          .error-message {
-            color: #ef4444;
-            font-size: 0.875rem;
-            margin-top: 0.25rem;
-          }
-          .checkbox-container {
-            display: flex;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            background-color: #f8fafc;
-            padding: 1rem;
-            border-radius: 0.75rem;
-            border: 1px solid #e2e8f0;
-          }
-          .checkbox-input {
-            width: 1.25rem;
-            height: 1.25rem;
-            margin-right: 0.75rem;
-            cursor: pointer;
-            accent-color: #2563eb;
-          }
-          .checkbox-label {
-            color: #374151;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            margin: 0;
-          }
-          .submit-button {
-            width: 100%;
-            background-color: #2563eb;
-            color: #ffffff;
-            font-weight: 700;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.75rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            transition-property: all;
-            transition-duration: 300ms;
-            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-            transform: scale(1);
-          }
-          .submit-button:hover {
-            background-color: #1d4ed8;
-            transform: scale(1.02);
-          }
-          .submit-button[disabled] {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: scale(1);
-          }
+          body { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; background-color: #f3f4f6; }
+          .main-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+          .card { background-color: #ffffff; padding: 2rem; border-radius: 1rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); width: 100%; max-width: 48rem; border: 1px solid #e5e7eb; }
+          .title { font-size: 2.25rem; font-weight: 800; text-align: center; color: #1f2937; margin-bottom: 0.5rem; }
+          .subtitle { font-size: 1.125rem; text-align: center; color: #4b5563; margin-bottom: 2rem; }
+          .message-box { margin-bottom: 1rem; padding: 1rem; text-align: center; font-size: 1.125rem; font-weight: 600; border-radius: 0.5rem; }
+          .success { background-color: #d1fae5; color: #065f46; border-color: #a7f3d0; }
+          .error { background-color: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+          .form-group { margin-bottom: 1.5rem; }
+          .form-label { color: #374151; font-weight: 500; display: flex; align-items: center; margin-bottom: 0.25rem; }
+          .form-label svg { width: 1.25rem; height: 1.25rem; color: #6b7280; margin-right: 0.5rem; }
+          .form-input { width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.75rem; }
+          .form-input:focus { border-color: #3b82f6; outline: 2px solid transparent; outline-offset: 2px; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); }
+          .error-message { color: #ef4444; font-size: 0.875rem; margin-top: 0.25rem; }
+          .checkbox-container { display: flex; align-items: center; margin-bottom: 1.5rem; background-color: #f8fafc; padding: 1rem; border-radius: 0.75rem; border: 1px solid #e2e8f0; }
+          .checkbox-input { width: 1.25rem; height: 1.25rem; margin-right: 0.75rem; cursor: pointer; accent-color: #2563eb; }
+          .checkbox-label { color: #374151; font-weight: 600; cursor: pointer; display: flex; align-items: center; margin: 0; }
+          .submit-button { width: 100%; background-color: #2563eb; color: #ffffff; font-weight: 700; padding: 0.75rem 1.5rem; border-radius: 0.75rem; transition: all 300ms; }
+          .submit-button:hover { background-color: #1d4ed8; transform: scale(1.02); }
+          .submit-button[disabled] { opacity: 0.6; cursor: not-allowed; }
         `}
       </style>
 
@@ -222,102 +93,46 @@ const App = () => {
           <h1 className="title">Homework Log</h1>
           <p className="subtitle">Enter your assignment details to save them automatically.</p>
 
-          {submissionStatus === 'success' && (
-            <div className="message-box success">
-              ✅ Homework submitted successfully!
-            </div>
-          )}
-          {submissionStatus === 'error' && (
-            <div className="message-box error">
-              ❌ An error occurred. Please try again.
-            </div>
-          )}
+          {submissionStatus === 'success' && <div className="message-box success">✅ Homework submitted successfully!</div>}
+          {submissionStatus === 'error' && <div className="message-box error">❌ An error occurred. Please try again.</div>}
           
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="form-group">
-              <label htmlFor="university" className="form-label">
-                <School /> University
-              </label>
-              <select
-                id="university"
-                {...register('university', { required: 'University is required' })}
-                className="form-input"
-              >
+              <label htmlFor="university" className="form-label"><School /> University</label>
+              <select id="university" {...register('university', { required: 'University is required' })} className="form-input">
                 <option value="">Select a University...</option>
-                {universities.map((uni) => (
-                  <option key={uni.value} value={uni.value}>{uni.name}</option>
-                ))}
+                {universities.map((uni) => <option key={uni.value} value={uni.value}>{uni.name}</option>)}
               </select>
-              {errors.university && <p className="error-message">{errors.university.message}</p>}
             </div>
 
             <div className="form-group">
-              <label htmlFor="subject" className="form-label">
-                <Book /> Subject
-              </label>
-              <select
-                id="subject"
-                {...register('subject', { required: 'Subject is required' })}
-                className="form-input"
-              >
+              <label htmlFor="subject" className="form-label"><Book /> Subject</label>
+              <select id="subject" {...register('subject', { required: 'Subject is required' })} className="form-input">
                 <option value="">Select a Subject...</option>
-                {subjects.map((sub) => (
-                  <option key={sub.value} value={sub.value}>{sub.name}</option>
-                ))}
+                {subjects.map((sub) => <option key={sub.value} value={sub.value}>{sub.name}</option>)}
               </select>
-              {errors.subject && <p className="error-message">{errors.subject.message}</p>}
             </div>
 
             <div className="form-group">
-              <label htmlFor="type" className="form-label">
-                <Users /> Assignment Type
-              </label>
-              <select
-                id="type"
-                {...register('type', { required: 'Assignment type is required' })}
-                className="form-input"
-              >
+              <label htmlFor="type" className="form-label"><Users /> Assignment Type</label>
+              <select id="type" {...register('type', { required: 'Assignment type is required' })} className="form-input">
                 <option value="">Select an Assignment Type...</option>
-                {assignmentTypes.map((type) => (
-                  <option key={type.value} value={type.value}>{type.name}</option>
-                ))}
+                {assignmentTypes.map((type) => <option key={type.value} value={type.value}>{type.name}</option>)}
               </select>
-              {errors.type && <p className="error-message">{errors.type.message}</p>}
             </div>
 
             <div className="form-group">
-              <label htmlFor="dueDate" className="form-label">
-                <Calendar /> Due Date
-              </label>
-              <input
-                type="date"
-                id="dueDate"
-                {...register('dueDate', { required: 'Due date is required' })}
-                className="form-input"
-              />
-              {errors.dueDate && <p className="error-message">{errors.dueDate.message}</p>}
+              <label htmlFor="dueDate" className="form-label"><Calendar /> Due Date</label>
+              <input type="date" id="dueDate" {...register('dueDate', { required: 'Due date is required' })} className="form-input" />
             </div>
             
             <div className="form-group">
-              <label htmlFor="description" className="form-label">
-                <Book /> Assignment Name / Description
-              </label>
-              <textarea
-                id="description"
-                rows="4"
-                {...register('description', { required: 'Description is required' })}
-                className="form-input"
-              ></textarea>
-              {errors.description && <p className="error-message">{errors.description.message}</p>}
+              <label htmlFor="description" className="form-label"><Book /> Assignment Name / Description</label>
+              <textarea id="description" rows="4" {...register('description', { required: 'Description is required' })} className="form-input"></textarea>
             </div>
 
             <div className="checkbox-container">
-              <input
-                type="checkbox"
-                id="createTask"
-                {...register('createTask')}
-                className="checkbox-input"
-              />
+              <input type="checkbox" id="createTask" {...register('createTask')} className="checkbox-input" />
               <label htmlFor="createTask" className="checkbox-label">
                 <CheckSquare style={{marginRight: '0.5rem', width: '1.25rem'}} /> Also create a task reminder?
               </label>
@@ -325,27 +140,21 @@ const App = () => {
 
             {watchCreateTask && (
               <div className="form-group">
-                <label htmlFor="daysOut" className="form-label">
-                  <Clock /> Days Out (Before Due Date)
-                </label>
+                <label htmlFor="daysOut" className="form-label"><Clock /> Days Out (Before Due Date)</label>
                 <input
                   type="number"
                   id="daysOut"
                   {...register('daysOut', { 
+                    valueAsNumber: true, // Forces the input to be a math number
                     required: 'Please specify how many days out for the task',
-                    min: { value: 0, message: 'Cannot be a negative number' }
+                    min: { value: 0, message: 'Cannot be negative' }
                   })}
                   className="form-input"
                 />
-                {errors.daysOut && <p className="error-message">{errors.daysOut.message}</p>}
               </div>
             )}
 
-            <button
-              type="submit"
-              className="submit-button"
-              disabled={submissionStatus === 'loading'}
-            >
+            <button type="submit" className="submit-button" disabled={submissionStatus === 'loading'}>
               {submissionStatus === 'loading' ? 'Submitting...' : 'Submit Assignment'}
             </button>
           </form>
