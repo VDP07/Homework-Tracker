@@ -19,6 +19,8 @@ const App = () => {
   ];
 
   const subjects = [
+    { name: 'KU', value: 'KU' }, // Priority 1
+    { name: 'NMC', value: 'NMC' }, // Priority 2
     { name: 'MED6204-Research', value: 'MED6204-Research' },
     { name: 'MED6006-Quality', value: 'MED6006-Quality' },
     { name: 'NMC Thesis', value: 'NMC Thesis' },
@@ -44,7 +46,6 @@ const App = () => {
     }
   });
   
-  // Logic to watch the dropdowns for "Other"
   const watchTaskList = watch('taskList');
   const watchSubject = watch('subject');
   const watchAssignmentType = watch('type');
@@ -53,18 +54,21 @@ const App = () => {
   const onSubmit = async (data) => {
     setSubmissionStatus('loading');
     
-    // Resolve final text values from either the dropdown or the custom input
+    // 1. Resolve custom names if "Other" was selected
     const finalTaskList = data.taskList === 'Other' ? data.customTaskList : data.taskList;
     const finalSubject = data.subject === 'Other' ? data.customSubject : data.subject;
     const finalType = data.type === 'Other' ? data.customType : data.type;
+
+    // 2. Format the name as "Task Cat: Subject"
+    const formattedTitle = `${finalTaskList}: ${finalSubject}`;
 
     const payload = { 
       ...data,
       taskList: finalTaskList,
       subject: finalSubject,
       type: finalType,
-      // Create a clean task name for Google Tasks
-      taskName: `${finalTaskList}-${finalSubject}` 
+      title: formattedTitle,    // For Calendar entry
+      taskName: formattedTitle  // For Google Task name
     };
     
     try {
@@ -87,37 +91,35 @@ const App = () => {
     <>
       <style>
         {`
-          body { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; background-color: #f1f5f9; margin: 0; }
+          body { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; background-color: #f8fafc; margin: 0; }
           .main-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; }
-          .card { background-color: #ffffff; padding: 2.5rem; border-radius: 1.25rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1); width: 100%; max-width: 44rem; border: 1px solid #e2e8f0; }
-          .title { font-size: 2.5rem; font-weight: 900; text-align: center; color: #0f172a; margin-bottom: 0.5rem; }
+          .card { background-color: #ffffff; padding: 2.5rem; border-radius: 1.25rem; box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.05); width: 100%; max-width: 44rem; border: 1px solid #e2e8f0; }
+          .title { font-size: 2.5rem; font-weight: 900; text-align: center; color: #1e293b; margin-bottom: 0.5rem; }
           .subtitle { font-size: 1.125rem; text-align: center; color: #64748b; margin-bottom: 2.5rem; }
-          .message-box { margin-bottom: 1.5rem; padding: 1.25rem; text-align: center; font-weight: 700; border-radius: 0.75rem; border: 1px solid transparent; }
-          .success { background-color: #f0fdf4; color: #166534; border-color: #bbf7d0; }
-          .error { background-color: #fef2f2; color: #991b1b; border-color: #fecaca; }
+          .message-box { margin-bottom: 1.5rem; padding: 1.25rem; text-align: center; font-weight: 700; border-radius: 0.75rem; }
+          .success { background-color: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+          .error { background-color: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
           .form-group { margin-bottom: 1.5rem; }
-          .form-label { color: #334155; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.025em; }
-          .form-label svg { width: 1.25rem; height: 1.25rem; color: #3b82f6; margin-right: 0.6rem; }
+          .form-label { color: #334155; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; margin-bottom: 0.5rem; text-transform: uppercase; }
+          .form-label svg { width: 1.125rem; height: 1.125rem; color: #3b82f6; margin-right: 0.6rem; }
           .form-input { width: 100%; padding: 0.85rem; border: 1px solid #cbd5e1; border-radius: 0.75rem; font-size: 1rem; transition: all 0.2s; box-sizing: border-box; }
           .form-input:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
           .custom-field-area { background-color: #f8fafc; padding: 1.25rem; border-radius: 0.75rem; border: 1px dashed #3b82f6; margin-top: -0.75rem; margin-bottom: 1.5rem; }
-          .checkbox-container { display: flex; align-items: center; padding: 1.25rem; background-color: #eff6ff; border-radius: 1rem; border: 1px solid #dbeafe; margin-bottom: 2rem; cursor: pointer; transition: background 0.2s; }
-          .checkbox-container:hover { background-color: #dbeafe; }
+          .checkbox-container { display: flex; align-items: center; padding: 1.25rem; background-color: #eff6ff; border-radius: 1rem; border: 1px solid #dbeafe; margin-bottom: 2rem; cursor: pointer; }
           .submit-button { width: 100%; background-color: #2563eb; color: #ffffff; font-weight: 800; padding: 1.125rem; border-radius: 0.75rem; border: none; cursor: pointer; font-size: 1.25rem; transition: all 0.2s; }
-          .submit-button:hover { background-color: #1d4ed8; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3); }
+          .submit-button:hover { background-color: #1d4ed8; transform: translateY(-1px); }
         `}
       </style>
 
       <div className="main-container">
         <div className="card">
           <h1 className="title">Homework Log</h1>
-          <p className="subtitle">Sync assignments with your academic schedule.</p>
+          <p className="subtitle">Syncing Category: Subject to your calendar.</p>
 
-          {submissionStatus === 'success' && <div className="message-box success">✨ Logged to Cloud Successfully!</div>}
-          {submissionStatus === 'error' && <div className="message-box error">⚠️ Error submitting. Check connection.</div>}
+          {submissionStatus === 'success' && <div className="message-box success">✨ Successfully Logged as Category: Subject!</div>}
           
           <form onSubmit={handleSubmit(onSubmit)}>
-            {/* University Selection */}
+            {/* Institution */}
             <div className="form-group">
               <label className="form-label"><School /> Institution</label>
               <select {...register('university', { required: true })} className="form-input">
@@ -126,7 +128,7 @@ const App = () => {
               </select>
             </div>
 
-            {/* Task List Selection */}
+            {/* Task Category */}
             <div className="form-group">
               <label className="form-label"><List /> Task Category</label>
               <select {...register('taskList', { required: true })} className="form-input">
@@ -136,12 +138,11 @@ const App = () => {
             </div>
             {watchTaskList === 'Other' && (
               <div className="custom-field-area">
-                <label className="form-label"><Edit3 /> Specify Task Category</label>
                 <input type="text" {...register('customTaskList', { required: true })} placeholder="Type custom category..." className="form-input" />
               </div>
             )}
 
-            {/* Subject Selection */}
+            {/* Subject - Priority KU/NMC */}
             <div className="form-group">
               <label className="form-label"><Book /> Course / Subject</label>
               <select {...register('subject', { required: true })} className="form-input">
@@ -151,12 +152,11 @@ const App = () => {
             </div>
             {watchSubject === 'Other' && (
               <div className="custom-field-area">
-                <label className="form-label"><Edit3 /> Specify Subject</label>
                 <input type="text" {...register('customSubject', { required: true })} placeholder="Type custom subject..." className="form-input" />
               </div>
             )}
 
-            {/* Assignment Type Selection */}
+            {/* Submission Type */}
             <div className="form-group">
               <label className="form-label"><Users /> Submission Type</label>
               <select {...register('type', { required: true })} className="form-input">
@@ -166,8 +166,7 @@ const App = () => {
             </div>
             {watchAssignmentType === 'Other' && (
               <div className="custom-field-area">
-                <label className="form-label"><Edit3 /> Specify Submission Type</label>
-                <input type="text" {...register('customType', { required: true })} placeholder="Type custom submission type..." className="form-input" />
+                <input type="text" {...register('customType', { required: true })} placeholder="Type custom type..." className="form-input" />
               </div>
             )}
 
@@ -177,18 +176,18 @@ const App = () => {
               <input type="date" {...register('dueDate', { required: true })} className="form-input" />
             </div>
             
-            {/* Description */}
+            {/* Assignment Brief */}
             <div className="form-group">
-              <label className="form-label"><Book /> Assignment Brief</label>
-              <textarea rows="3" {...register('description', { required: true })} className="form-input" placeholder="Enter assignment details..."></textarea>
+              <label className="form-label"><Book /> Assignment Details</label>
+              <textarea rows="3" {...register('description', { required: true })} className="form-input" placeholder="Notes for the calendar entry..."></textarea>
             </div>
 
-            {/* Task Automation Toggle */}
+            {/* Task Automation */}
             <label className="checkbox-container">
               <input type="checkbox" {...register('createTask')} className="checkbox-input" />
               <div style={{ color: '#1e40af', fontWeight: 800, fontSize: '0.95rem' }}>
                 <CheckSquare style={{ display: 'inline', marginRight: '0.5rem', verticalAlign: 'middle' }} /> 
-                ACTIVATE PREPARATION REMINDER?
+                CREATE PREPARATION REMINDER?
               </div>
             </label>
 
@@ -196,7 +195,7 @@ const App = () => {
               <div style={{ display: 'flex', gap: '1.25rem', marginBottom: '2rem' }}>
                 <div style={{ flex: 1 }}>
                   <label className="form-label"><Clock /> Lead Time (Days)</label>
-                  <input type="number" {...register('daysOut', { valueAsNumber: true })} className="form-input" />
+                  <input type="number" {...register('daysOut')} className="form-input" />
                 </div>
                 <div style={{ flex: 1 }}>
                   <label className="form-label">Sequence</label>
@@ -209,7 +208,7 @@ const App = () => {
             )}
 
             <button type="submit" className="submit-button" disabled={submissionStatus === 'loading'}>
-              {submissionStatus === 'loading' ? 'COMMUNICATING...' : 'SUBMIT TO SYSTEMS'}
+              {submissionStatus === 'loading' ? 'SUBMITTING...' : 'LOG TO CALENDAR'}
             </button>
           </form>
         </div>
