@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { Calendar, Book, Users, School, CheckSquare, Clock, List } from 'lucide-react';
+import { Calendar, Book, Users, School, CheckSquare, Clock, List, Edit3 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
 const App = () => {
-  // Your Google Apps Script URL
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwOqUav0nrJDa_--AuHC4aVOp7KfLvsjNjyQ8jKFAbg9D7QIBPfTgFfib-FD-r_JIrC/exec';
   const [submissionStatus, setSubmissionStatus] = useState(null);
 
@@ -25,6 +24,7 @@ const App = () => {
     { name: 'NMC Thesis', value: 'NMC Thesis' },
     { name: 'KU Thesis', value: 'KU Thesis' },
     { name: 'Task', value: 'Task' },
+    { name: 'Other', value: 'Other' },
   ];
 
   const assignmentTypes = [
@@ -39,22 +39,33 @@ const App = () => {
   const { register, handleSubmit, watch, formState: { errors }, reset } = useForm({
     defaultValues: { 
       daysOut: 5,
-      taskTiming: 'before' 
+      taskTiming: 'before',
+      createTask: false
     }
   });
   
+  // Logic to watch the dropdowns for "Other"
+  const watchTaskList = watch('taskList');
+  const watchSubject = watch('subject');
+  const watchAssignmentType = watch('type');
   const watchCreateTask = watch('createTask');
 
   const onSubmit = async (data) => {
     setSubmissionStatus('loading');
-    const payload = { ...data };
     
-    if (payload.createTask) {
-      payload.taskName = `${payload.taskList}-${payload.subject}`; 
-    } else {
-      delete payload.daysOut;
-      delete payload.taskTiming;
-    }
+    // Resolve final text values from either the dropdown or the custom input
+    const finalTaskList = data.taskList === 'Other' ? data.customTaskList : data.taskList;
+    const finalSubject = data.subject === 'Other' ? data.customSubject : data.subject;
+    const finalType = data.type === 'Other' ? data.customType : data.type;
+
+    const payload = { 
+      ...data,
+      taskList: finalTaskList,
+      subject: finalSubject,
+      type: finalType,
+      // Create a clean task name for Google Tasks
+      taskName: `${finalTaskList}-${finalSubject}` 
+    };
     
     try {
       await fetch(SCRIPT_URL, {
@@ -76,122 +87,129 @@ const App = () => {
     <>
       <style>
         {`
-          body { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; background-color: #f3f4f6; }
-          .main-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
-          .card { background-color: #ffffff; padding: 2rem; border-radius: 1rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); width: 100%; max-width: 48rem; border: 1px solid #e5e7eb; }
-          .title { font-size: 2.25rem; font-weight: 800; text-align: center; color: #1f2937; margin-bottom: 0.5rem; }
-          .subtitle { font-size: 1.125rem; text-align: center; color: #4b5563; margin-bottom: 2rem; }
-          .message-box { margin-bottom: 1rem; padding: 1rem; text-align: center; font-size: 1.125rem; font-weight: 600; border-radius: 0.5rem; }
-          .success { background-color: #d1fae5; color: #065f46; border-color: #a7f3d0; }
-          .error { background-color: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+          body { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; background-color: #f1f5f9; margin: 0; }
+          .main-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; }
+          .card { background-color: #ffffff; padding: 2.5rem; border-radius: 1.25rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1); width: 100%; max-width: 44rem; border: 1px solid #e2e8f0; }
+          .title { font-size: 2.5rem; font-weight: 900; text-align: center; color: #0f172a; margin-bottom: 0.5rem; }
+          .subtitle { font-size: 1.125rem; text-align: center; color: #64748b; margin-bottom: 2.5rem; }
+          .message-box { margin-bottom: 1.5rem; padding: 1.25rem; text-align: center; font-weight: 700; border-radius: 0.75rem; border: 1px solid transparent; }
+          .success { background-color: #f0fdf4; color: #166534; border-color: #bbf7d0; }
+          .error { background-color: #fef2f2; color: #991b1b; border-color: #fecaca; }
           .form-group { margin-bottom: 1.5rem; }
-          .form-label { color: #374151; font-weight: 500; display: flex; align-items: center; margin-bottom: 0.25rem; }
-          .form-label svg { width: 1.25rem; height: 1.25rem; color: #6b7280; margin-right: 0.5rem; }
-          .form-input { width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.75rem; }
-          .form-input:focus { border-color: #3b82f6; outline: 2px solid transparent; outline-offset: 2px; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); }
-          .error-message { color: #ef4444; font-size: 0.875rem; margin-top: 0.25rem; }
-          .flex-group { display: flex; gap: 1rem; margin-bottom: 1.5rem; }
-          .checkbox-container { display: flex; align-items: center; margin-bottom: 1.5rem; background-color: #f8fafc; padding: 1rem; border-radius: 0.75rem; border: 1px solid #e2e8f0; }
-          .checkbox-input { width: 1.25rem; height: 1.25rem; margin-right: 0.75rem; cursor: pointer; accent-color: #2563eb; }
-          .checkbox-label { color: #374151; font-weight: 600; cursor: pointer; display: flex; align-items: center; margin: 0; }
-          .submit-button { width: 100%; background-color: #2563eb; color: #ffffff; font-weight: 700; padding: 0.75rem 1.5rem; border-radius: 0.75rem; transition: all 300ms; }
-          .submit-button:hover { background-color: #1d4ed8; transform: scale(1.02); }
-          .submit-button[disabled] { opacity: 0.6; cursor: not-allowed; }
+          .form-label { color: #334155; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.025em; }
+          .form-label svg { width: 1.25rem; height: 1.25rem; color: #3b82f6; margin-right: 0.6rem; }
+          .form-input { width: 100%; padding: 0.85rem; border: 1px solid #cbd5e1; border-radius: 0.75rem; font-size: 1rem; transition: all 0.2s; box-sizing: border-box; }
+          .form-input:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+          .custom-field-area { background-color: #f8fafc; padding: 1.25rem; border-radius: 0.75rem; border: 1px dashed #3b82f6; margin-top: -0.75rem; margin-bottom: 1.5rem; }
+          .checkbox-container { display: flex; align-items: center; padding: 1.25rem; background-color: #eff6ff; border-radius: 1rem; border: 1px solid #dbeafe; margin-bottom: 2rem; cursor: pointer; transition: background 0.2s; }
+          .checkbox-container:hover { background-color: #dbeafe; }
+          .submit-button { width: 100%; background-color: #2563eb; color: #ffffff; font-weight: 800; padding: 1.125rem; border-radius: 0.75rem; border: none; cursor: pointer; font-size: 1.25rem; transition: all 0.2s; }
+          .submit-button:hover { background-color: #1d4ed8; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3); }
         `}
       </style>
 
       <div className="main-container">
         <div className="card">
           <h1 className="title">Homework Log</h1>
-          <p className="subtitle">Enter your assignment details to save them automatically.</p>
+          <p className="subtitle">Sync assignments with your academic schedule.</p>
 
-          {submissionStatus === 'success' && <div className="message-box success">✅ Homework submitted successfully!</div>}
-          {submissionStatus === 'error' && <div className="message-box error">❌ An error occurred. Please try again.</div>}
+          {submissionStatus === 'success' && <div className="message-box success">✨ Logged to Cloud Successfully!</div>}
+          {submissionStatus === 'error' && <div className="message-box error">⚠️ Error submitting. Check connection.</div>}
           
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)}>
+            {/* University Selection */}
             <div className="form-group">
-              <label htmlFor="university" className="form-label"><School /> University</label>
-              <select id="university" {...register('university', { required: 'University is required' })} className="form-input">
-                <option value="">Select a University...</option>
+              <label className="form-label"><School /> Institution</label>
+              <select {...register('university', { required: true })} className="form-input">
+                <option value="">Choose University...</option>
                 {universities.map((uni) => <option key={uni.value} value={uni.value}>{uni.name}</option>)}
               </select>
-              {errors.university && <p className="error-message">{errors.university.message}</p>}
             </div>
 
+            {/* Task List Selection */}
             <div className="form-group">
-              <label htmlFor="taskList" className="form-label"><List /> Task List</label>
-              <select id="taskList" {...register('taskList', { required: 'Task List category is required' })} className="form-input">
-                <option value="">Select a Task List...</option>
+              <label className="form-label"><List /> Task Category</label>
+              <select {...register('taskList', { required: true })} className="form-input">
+                <option value="">Choose Task List...</option>
                 {taskListOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.name}</option>)}
               </select>
-              {errors.taskList && <p className="error-message">{errors.taskList.message}</p>}
             </div>
+            {watchTaskList === 'Other' && (
+              <div className="custom-field-area">
+                <label className="form-label"><Edit3 /> Specify Task Category</label>
+                <input type="text" {...register('customTaskList', { required: true })} placeholder="Type custom category..." className="form-input" />
+              </div>
+            )}
 
+            {/* Subject Selection */}
             <div className="form-group">
-              <label htmlFor="subject" className="form-label"><Book /> Subject</label>
-              <select id="subject" {...register('subject', { required: 'Subject is required' })} className="form-input">
-                <option value="">Select a Subject...</option>
+              <label className="form-label"><Book /> Course / Subject</label>
+              <select {...register('subject', { required: true })} className="form-input">
+                <option value="">Choose Subject...</option>
                 {subjects.map((sub) => <option key={sub.value} value={sub.value}>{sub.name}</option>)}
               </select>
-              {errors.subject && <p className="error-message">{errors.subject.message}</p>}
             </div>
+            {watchSubject === 'Other' && (
+              <div className="custom-field-area">
+                <label className="form-label"><Edit3 /> Specify Subject</label>
+                <input type="text" {...register('customSubject', { required: true })} placeholder="Type custom subject..." className="form-input" />
+              </div>
+            )}
 
+            {/* Assignment Type Selection */}
             <div className="form-group">
-              <label htmlFor="type" className="form-label"><Users /> Assignment Type</label>
-              <select id="type" {...register('type', { required: 'Assignment type is required' })} className="form-input">
-                <option value="">Select an Assignment Type...</option>
+              <label className="form-label"><Users /> Submission Type</label>
+              <select {...register('type', { required: true })} className="form-input">
+                <option value="">Choose Type...</option>
                 {assignmentTypes.map((type) => <option key={type.value} value={type.value}>{type.name}</option>)}
               </select>
-              {errors.type && <p className="error-message">{errors.type.message}</p>}
             </div>
+            {watchAssignmentType === 'Other' && (
+              <div className="custom-field-area">
+                <label className="form-label"><Edit3 /> Specify Submission Type</label>
+                <input type="text" {...register('customType', { required: true })} placeholder="Type custom submission type..." className="form-input" />
+              </div>
+            )}
 
+            {/* Due Date */}
             <div className="form-group">
-              <label htmlFor="dueDate" className="form-label"><Calendar /> Due Date</label>
-              <input type="date" id="dueDate" {...register('dueDate', { required: 'Due date is required' })} className="form-input" />
-              {errors.dueDate && <p className="error-message">{errors.dueDate.message}</p>}
+              <label className="form-label"><Calendar /> Final Due Date</label>
+              <input type="date" {...register('dueDate', { required: true })} className="form-input" />
             </div>
             
+            {/* Description */}
             <div className="form-group">
-              <label htmlFor="description" className="form-label"><Book /> Assignment Name / Description</label>
-              <textarea id="description" rows="4" {...register('description', { required: 'Description is required' })} className="form-input"></textarea>
-              {errors.description && <p className="error-message">{errors.description.message}</p>}
+              <label className="form-label"><Book /> Assignment Brief</label>
+              <textarea rows="3" {...register('description', { required: true })} className="form-input" placeholder="Enter assignment details..."></textarea>
             </div>
 
-            <div className="checkbox-container">
-              <input type="checkbox" id="createTask" {...register('createTask')} className="checkbox-input" />
-              <label htmlFor="createTask" className="checkbox-label">
-                <CheckSquare style={{marginRight: '0.5rem', width: '1.25rem'}} /> Also create a task reminder?
-              </label>
-            </div>
+            {/* Task Automation Toggle */}
+            <label className="checkbox-container">
+              <input type="checkbox" {...register('createTask')} className="checkbox-input" />
+              <div style={{ color: '#1e40af', fontWeight: 800, fontSize: '0.95rem' }}>
+                <CheckSquare style={{ display: 'inline', marginRight: '0.5rem', verticalAlign: 'middle' }} /> 
+                ACTIVATE PREPARATION REMINDER?
+              </div>
+            </label>
 
             {watchCreateTask && (
-              <div className="flex-group">
+              <div style={{ display: 'flex', gap: '1.25rem', marginBottom: '2rem' }}>
                 <div style={{ flex: 1 }}>
-                  <label htmlFor="daysOut" className="form-label"><Clock /> Days</label>
-                  <input
-                    type="number"
-                    id="daysOut"
-                    {...register('daysOut', { 
-                      valueAsNumber: true,
-                      required: 'Please specify how many days',
-                      min: { value: 0, message: 'Cannot be negative' }
-                    })}
-                    className="form-input"
-                  />
-                  {errors.daysOut && <p className="error-message">{errors.daysOut.message}</p>}
+                  <label className="form-label"><Clock /> Lead Time (Days)</label>
+                  <input type="number" {...register('daysOut', { valueAsNumber: true })} className="form-input" />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <label htmlFor="taskTiming" className="form-label">Timing</label>
-                  <select id="taskTiming" {...register('taskTiming')} className="form-input">
-                    <option value="before">Before Due Date</option>
-                    <option value="after">After Due Date</option>
+                  <label className="form-label">Sequence</label>
+                  <select {...register('taskTiming')} className="form-input">
+                    <option value="before">BEFORE DUE DATE</option>
+                    <option value="after">AFTER DUE DATE</option>
                   </select>
                 </div>
               </div>
             )}
 
             <button type="submit" className="submit-button" disabled={submissionStatus === 'loading'}>
-              {submissionStatus === 'loading' ? 'Submitting...' : 'Submit Assignment'}
+              {submissionStatus === 'loading' ? 'COMMUNICATING...' : 'SUBMIT TO SYSTEMS'}
             </button>
           </form>
         </div>
