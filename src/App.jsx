@@ -3,6 +3,7 @@ import { Calendar, Book, Users, School, CheckSquare, Clock, List } from 'lucide-
 import { useForm } from 'react-hook-form';
 
 const App = () => {
+  // Your Google Apps Script URL
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwOqUav0nrJDa_--AuHC4aVOp7KfLvsjNjyQ8jKFAbg9D7QIBPfTgFfib-FD-r_JIrC/exec';
   const [submissionStatus, setSubmissionStatus] = useState(null);
 
@@ -11,7 +12,6 @@ const App = () => {
     { name: 'Nakornratchasima College', value: 'Nakornratchasima College' },
   ];
 
-  // ADDED: New Task List options
   const taskListOptions = [
     { name: 'Hw Due', value: 'Hw Due' },
     { name: 'Activity', value: 'Activity' },
@@ -20,8 +20,6 @@ const App = () => {
   ];
 
   const subjects = [
-    { name: 'KU', value: 'KU' },
-    { name: 'NMC', value: 'NMC' },
     { name: 'MED6204-Research', value: 'MED6204-Research' },
     { name: 'MED6006-Quality', value: 'MED6006-Quality' },
     { name: 'NMC Thesis', value: 'NMC Thesis' },
@@ -39,7 +37,10 @@ const App = () => {
   ];
   
   const { register, handleSubmit, watch, formState: { errors }, reset } = useForm({
-    defaultValues: { daysOut: 5 }
+    defaultValues: { 
+      daysOut: 5,
+      taskTiming: 'before' 
+    }
   });
   
   const watchCreateTask = watch('createTask');
@@ -49,10 +50,10 @@ const App = () => {
     const payload = { ...data };
     
     if (payload.createTask) {
-      // UPDATED: Formats it exactly as: [Task List]-[Subject] (e.g., "Hw Due-MED6204-Research")
       payload.taskName = `${payload.taskList}-${payload.subject}`; 
     } else {
       delete payload.daysOut;
+      delete payload.taskTiming;
     }
     
     try {
@@ -64,7 +65,7 @@ const App = () => {
       });
 
       setSubmissionStatus('success');
-      reset({ createTask: false, daysOut: 5 });
+      reset({ createTask: false, daysOut: 5, taskTiming: 'before' });
     } catch (error) {
       console.error('Submission failed:', error);
       setSubmissionStatus('error');
@@ -89,6 +90,7 @@ const App = () => {
           .form-input { width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.75rem; }
           .form-input:focus { border-color: #3b82f6; outline: 2px solid transparent; outline-offset: 2px; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); }
           .error-message { color: #ef4444; font-size: 0.875rem; margin-top: 0.25rem; }
+          .flex-group { display: flex; gap: 1rem; margin-bottom: 1.5rem; }
           .checkbox-container { display: flex; align-items: center; margin-bottom: 1.5rem; background-color: #f8fafc; padding: 1rem; border-radius: 0.75rem; border: 1px solid #e2e8f0; }
           .checkbox-input { width: 1.25rem; height: 1.25rem; margin-right: 0.75rem; cursor: pointer; accent-color: #2563eb; }
           .checkbox-label { color: #374151; font-weight: 600; cursor: pointer; display: flex; align-items: center; margin: 0; }
@@ -116,7 +118,6 @@ const App = () => {
               {errors.university && <p className="error-message">{errors.university.message}</p>}
             </div>
 
-            {/* NEW: Task List Dropdown */}
             <div className="form-group">
               <label htmlFor="taskList" className="form-label"><List /> Task List</label>
               <select id="taskList" {...register('taskList', { required: 'Task List category is required' })} className="form-input">
@@ -164,19 +165,28 @@ const App = () => {
             </div>
 
             {watchCreateTask && (
-              <div className="form-group">
-                <label htmlFor="daysOut" className="form-label"><Clock /> Days Out (Before Due Date)</label>
-                <input
-                  type="number"
-                  id="daysOut"
-                  {...register('daysOut', { 
-                    valueAsNumber: true,
-                    required: 'Please specify how many days out for the task',
-                    min: { value: 0, message: 'Cannot be negative' }
-                  })}
-                  className="form-input"
-                />
-                {errors.daysOut && <p className="error-message">{errors.daysOut.message}</p>}
+              <div className="flex-group">
+                <div style={{ flex: 1 }}>
+                  <label htmlFor="daysOut" className="form-label"><Clock /> Days</label>
+                  <input
+                    type="number"
+                    id="daysOut"
+                    {...register('daysOut', { 
+                      valueAsNumber: true,
+                      required: 'Please specify how many days',
+                      min: { value: 0, message: 'Cannot be negative' }
+                    })}
+                    className="form-input"
+                  />
+                  {errors.daysOut && <p className="error-message">{errors.daysOut.message}</p>}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label htmlFor="taskTiming" className="form-label">Timing</label>
+                  <select id="taskTiming" {...register('taskTiming')} className="form-input">
+                    <option value="before">Before Due Date</option>
+                    <option value="after">After Due Date</option>
+                  </select>
+                </div>
               </div>
             )}
 
