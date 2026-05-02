@@ -19,8 +19,8 @@ const App = () => {
   ];
 
   const subjects = [
-    { name: 'KU', value: 'KU' }, // Priority 1
-    { name: 'NMC', value: 'NMC' }, // Priority 2
+    { name: 'KU', value: 'KU' },
+    { name: 'NMC', value: 'NMC' },
     { name: 'MED6204-Research', value: 'MED6204-Research' },
     { name: 'MED6006-Quality', value: 'MED6006-Quality' },
     { name: 'NMC Thesis', value: 'NMC Thesis' },
@@ -54,21 +54,25 @@ const App = () => {
   const onSubmit = async (data) => {
     setSubmissionStatus('loading');
     
-    // 1. Resolve custom names if "Other" was selected
+    // 1. Resolve custom names
     const finalTaskList = data.taskList === 'Other' ? data.customTaskList : data.taskList;
     const finalSubject = data.subject === 'Other' ? data.customSubject : data.subject;
     const finalType = data.type === 'Other' ? data.customType : data.type;
 
-    // 2. Format the name as "Task Cat: Subject"
+    // 2. Format the name strictly as "Task Cat: Subject"
     const formattedTitle = `${finalTaskList}: ${finalSubject}`;
 
     const payload = { 
-      ...data,
+      university: data.university,
       taskList: finalTaskList,
       subject: finalSubject,
       type: finalType,
-      title: formattedTitle,    // For Calendar entry
-      taskName: formattedTitle  // For Google Task name
+      title: formattedTitle,     // THIS IS THE CALENDAR NAME
+      description: data.description, // THIS IS THE NOTES
+      dueDate: data.dueDate,
+      createTask: data.createTask,
+      daysOut: data.daysOut,
+      taskTiming: data.taskTiming
     };
     
     try {
@@ -82,7 +86,6 @@ const App = () => {
       setSubmissionStatus('success');
       reset({ createTask: false, daysOut: 5, taskTiming: 'before' });
     } catch (error) {
-      console.error('Submission failed:', error);
       setSubmissionStatus('error');
     }
   };
@@ -95,31 +98,27 @@ const App = () => {
           .main-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; }
           .card { background-color: #ffffff; padding: 2.5rem; border-radius: 1.25rem; box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.05); width: 100%; max-width: 44rem; border: 1px solid #e2e8f0; }
           .title { font-size: 2.5rem; font-weight: 900; text-align: center; color: #1e293b; margin-bottom: 0.5rem; }
-          .subtitle { font-size: 1.125rem; text-align: center; color: #64748b; margin-bottom: 2.5rem; }
+          .subtitle { font-size: 1.125rem; text-align: center; color: #64748b; margin-bottom: 2rem; }
           .message-box { margin-bottom: 1.5rem; padding: 1.25rem; text-align: center; font-weight: 700; border-radius: 0.75rem; }
-          .success { background-color: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
-          .error { background-color: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+          .success { background-color: #f0fdf4; color: #166534; }
           .form-group { margin-bottom: 1.5rem; }
-          .form-label { color: #334155; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; margin-bottom: 0.5rem; text-transform: uppercase; }
+          .form-label { color: #334155; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; margin-bottom: 0.5rem; text-transform: uppercase; }
           .form-label svg { width: 1.125rem; height: 1.125rem; color: #3b82f6; margin-right: 0.6rem; }
-          .form-input { width: 100%; padding: 0.85rem; border: 1px solid #cbd5e1; border-radius: 0.75rem; font-size: 1rem; transition: all 0.2s; box-sizing: border-box; }
-          .form-input:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
-          .custom-field-area { background-color: #f8fafc; padding: 1.25rem; border-radius: 0.75rem; border: 1px dashed #3b82f6; margin-top: -0.75rem; margin-bottom: 1.5rem; }
+          .form-input { width: 100%; padding: 0.85rem; border: 1px solid #cbd5e1; border-radius: 0.75rem; font-size: 1rem; box-sizing: border-box; }
+          .custom-field-area { background-color: #f8fafc; padding: 1.25rem; border-radius: 0.75rem; border: 1px dashed #3b82f6; margin-bottom: 1.5rem; }
           .checkbox-container { display: flex; align-items: center; padding: 1.25rem; background-color: #eff6ff; border-radius: 1rem; border: 1px solid #dbeafe; margin-bottom: 2rem; cursor: pointer; }
-          .submit-button { width: 100%; background-color: #2563eb; color: #ffffff; font-weight: 800; padding: 1.125rem; border-radius: 0.75rem; border: none; cursor: pointer; font-size: 1.25rem; transition: all 0.2s; }
-          .submit-button:hover { background-color: #1d4ed8; transform: translateY(-1px); }
+          .submit-button { width: 100%; background-color: #2563eb; color: #ffffff; font-weight: 800; padding: 1.125rem; border-radius: 0.75rem; border: none; cursor: pointer; font-size: 1.25rem; }
         `}
       </style>
 
       <div className="main-container">
         <div className="card">
           <h1 className="title">Homework Log</h1>
-          <p className="subtitle">Syncing Category: Subject to your calendar.</p>
+          <p className="subtitle">Syncing Category: Subject only.</p>
 
-          {submissionStatus === 'success' && <div className="message-box success">✨ Successfully Logged as Category: Subject!</div>}
+          {submissionStatus === 'success' && <div className="message-box success">✅ Successfully Logged!</div>}
           
           <form onSubmit={handleSubmit(onSubmit)}>
-            {/* Institution */}
             <div className="form-group">
               <label className="form-label"><School /> Institution</label>
               <select {...register('university', { required: true })} className="form-input">
@@ -128,7 +127,6 @@ const App = () => {
               </select>
             </div>
 
-            {/* Task Category */}
             <div className="form-group">
               <label className="form-label"><List /> Task Category</label>
               <select {...register('taskList', { required: true })} className="form-input">
@@ -142,7 +140,6 @@ const App = () => {
               </div>
             )}
 
-            {/* Subject - Priority KU/NMC */}
             <div className="form-group">
               <label className="form-label"><Book /> Course / Subject</label>
               <select {...register('subject', { required: true })} className="form-input">
@@ -156,7 +153,6 @@ const App = () => {
               </div>
             )}
 
-            {/* Submission Type */}
             <div className="form-group">
               <label className="form-label"><Users /> Submission Type</label>
               <select {...register('type', { required: true })} className="form-input">
@@ -170,45 +166,36 @@ const App = () => {
               </div>
             )}
 
-            {/* Due Date */}
             <div className="form-group">
               <label className="form-label"><Calendar /> Final Due Date</label>
               <input type="date" {...register('dueDate', { required: true })} className="form-input" />
             </div>
             
-            {/* Assignment Brief */}
             <div className="form-group">
-              <label className="form-label"><Book /> Assignment Details</label>
-              <textarea rows="3" {...register('description', { required: true })} className="form-input" placeholder="Notes for the calendar entry..."></textarea>
+              <label className="form-label"><Book /> Assignment Details (Will be hidden in notes)</label>
+              <textarea rows="3" {...register('description', { required: true })} className="form-input" placeholder="Notes..."></textarea>
             </div>
 
-            {/* Task Automation */}
             <label className="checkbox-container">
               <input type="checkbox" {...register('createTask')} className="checkbox-input" />
               <div style={{ color: '#1e40af', fontWeight: 800, fontSize: '0.95rem' }}>
                 <CheckSquare style={{ display: 'inline', marginRight: '0.5rem', verticalAlign: 'middle' }} /> 
-                CREATE PREPARATION REMINDER?
+                CREATE TASK REMINDER?
               </div>
             </label>
 
             {watchCreateTask && (
               <div style={{ display: 'flex', gap: '1.25rem', marginBottom: '2rem' }}>
-                <div style={{ flex: 1 }}>
-                  <label className="form-label"><Clock /> Lead Time (Days)</label>
-                  <input type="number" {...register('daysOut')} className="form-input" />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <label className="form-label">Sequence</label>
-                  <select {...register('taskTiming')} className="form-input">
-                    <option value="before">BEFORE DUE DATE</option>
-                    <option value="after">AFTER DUE DATE</option>
-                  </select>
-                </div>
+                <input type="number" {...register('daysOut')} className="form-input" placeholder="Days" />
+                <select {...register('taskTiming')} className="form-input">
+                  <option value="before">BEFORE</option>
+                  <option value="after">AFTER</option>
+                </select>
               </div>
             )}
 
             <button type="submit" className="submit-button" disabled={submissionStatus === 'loading'}>
-              {submissionStatus === 'loading' ? 'SUBMITTING...' : 'LOG TO CALENDAR'}
+              {submissionStatus === 'loading' ? 'LOGGING...' : 'LOG TO CALENDAR'}
             </button>
           </form>
         </div>
